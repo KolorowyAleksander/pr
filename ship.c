@@ -1,14 +1,8 @@
 #include "def.h"
 #include "clk.h"
 
-
-struct request {
-	int clock; // when the request happened
-	int h; 	   // number of tugboats requested
-	int tid;   // which process requested
-};
-
-struct request queue[SLAVENUM];
+#define WAITING_MIN 3000 * 1000 // usec
+#define WAITING_MAX 5000 * 1000 // usec
 
 struct clk * clock;
 
@@ -16,13 +10,12 @@ void add_to_queue(int tid, int n, int h)
 {
 	printf("Recieved entering from: %d, clock: %d\n",
 	       tid,
-	       clock_getval(clock));
+	       clk_getval(clock));
 
 	// TODO: add to queue
 	clk_inc(clock);
-	int c = clk_getval(clock);
 	pvm_initsend(PvmDataDefault);
-	pvm_pkint(&c, 1, 1);
+	clk_pkclk(clock);
 	pvm_send(tid, MSG_OK);
 }
 
@@ -40,11 +33,10 @@ void leaving(int* s_tids, int n)
 
 	int i;
 	for(i = 0; i < n; i++) {
-		int c = clk_getval(clock);
 		clk_inc(clock);
 
 		pvm_initsend(PvmDataDefault);
-		pvm_pkint(&c, 1, 1);
+		clk_pkclk(clock);
 		pvm_send(s_tids[i], MSG_FREE);
 	}
 }
@@ -52,15 +44,14 @@ void leaving(int* s_tids, int n)
 void entering(int* s_tids, int n, int h, int H)
 {
 	printf("Entering: clock: %d\n", clk_getval(clock));
-	int bufid, tag, s_tid, c, h, permissions;
+	int bufid, tag, s_tid, permissions;
 
 	// TODO: clear queue
 	int i;
 	for(i = 0; i < n; i++) {
 		clk_inc(clock);
-		int now = clk_getval(clock);
 		pvm_initsend(PvmDataDefault);
-		pvm_pkint(&now, 1, 1);
+		clk_pkclk(clock);
 		pvm_pkint(&h, 1, 1);
 		pvm_send(s_tids[i], MSG_TAKE);
 	}
@@ -70,13 +61,13 @@ void entering(int* s_tids, int n, int h, int H)
 	while(!can_enter) {
 		bufid = pvm_recv(-1, -1);
 		pvm_bufinfo(bufid, NULL, &tag, &s_tid);
-		pvm_upkint(&c, 1, 1);
-
-		clk_cmp(clock, c);
+		clk_upk_and_cmp(clock);
 
 		switch(tag) {
 			case MSG_TAKE: {
-				add_to_queue(s_tid, n, h);
+				int other_h;
+				pvm_upkint(&other_h, 1, 1);
+				add_to_queue(s_tid, n, other_h); // clock!
 			} case MSG_FREE: {
 				remove_from_queue(s_tid, n);
 			} case MSG_OK: {
@@ -89,12 +80,13 @@ void entering(int* s_tids, int n, int h, int H)
 	}
 }
 
-void idle(double duration, int n)
+void idle(int n)
 {
-	int bufid, tag, s_tid, c, h;
+	double duration = (rand()%(WAITING_MAX - WAITING_MIN)) + WAITING_MIN;
+	int bufid, tag, s_tid, h;
 	struct timeval t, t1, t2;
 
-	printf("Waiting: clock: %d\n", clk_getval(clock));
+	printf("Waiting for: %f us, clock: %d\n", duration, clk_getval(clock));
 
 	while(duration > 0) {
 		gettimeofday(&t1, NULL);
@@ -102,14 +94,13 @@ void idle(double duration, int n)
 		t.tv_usec = duration;
 		if ((bufid = pvm_trecv(-1, -1, &t)) > 0) {
 			pvm_bufinfo(bufid, NULL, &tag, &s_tid);
-			pvm_upkint(&c, 1, 1);
-
-			clk_cmp(clock, c);
+			clk_upk_and_cmp(clock);
 
 			switch(tag) {
 				case MSG_TAKE: {
-					pvm_upkint(&h, 1, 1);
-					add_to_queue(s_tid, n, h);
+					int other_h;
+					pvm_upkint(&other_h, 1, 1);
+					add_to_queue(s_tid, n, other_h); // clock!
 					break;
 				} case MSG_FREE: {
 					remove_from_queue(s_tid, n);
@@ -125,13 +116,13 @@ void idle(double duration, int n)
 
 void sailing(int* s_tids, int n, int h, int H)
 {
-	printf("Sailing: %d\n", my_tid);
+	printf("Sailing!\n");
 
 	int i;
 	for(i = 0; i < 3; i++) { // this will be infinite loop sometime
-		idle(2, n);
+		idle(n);
 		entering(s_tids, n, h, H);
-		idle(2, n);
+		idle(n);
 		leaving(s_tids, n);
 	}
 }
@@ -145,23 +136,15 @@ int main(int argc, char** argv)
 
 	srand(time(NULL));
 
-	// recieving initial structure
-	pvm_recv(-1, MSG_INIT);
+	pvm_recv(-1, MSG_INIT); // recieving initial data about other processes
 	pvm_upkint(&n, 1, 1);
 	pvm_upkint(s_tids, n, 1);
 	pvm_upkint(&h, 1, 1);
 	pvm_upkint(&H, 1, 1);
 
-	int i;
-	for(i = 0; i < n; i++) {
-		queue[i].clock = -1;
-		queue[i].h = -1;
-		queue[i].tid = s_tids[i];
-	}
-
-	clock = clk_init();
-
+	clk_make(clock);
 	sailing(s_tids, n, h, H);
 
+	clk_free(clock);
 	pvm_exit();
 }
