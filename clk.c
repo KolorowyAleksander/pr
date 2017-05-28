@@ -1,23 +1,39 @@
 #include "clk.h"
+#include <stdlib.h>
 
-struct logical_clock _c; 
 
-void init_clock() {
-	_c.value = 0;
+struct clk {
+	int count;
+};
+
+struct clk *clk_init()
+{
+	struct clk * _c = malloc(sizeof * _c);
+	_c.count = 0;
+
+	return _c;
 }
 
-void increase_clock() {
-	_c.value++;
+void clk_free(struct clk * clock)
+{
+	free(clock);
 }
 
-void cmp_and_increase(int other_clock) {
-	if (_c.value > other_clock) {
-		_c.value++;
+void clk_inc(struct clk * clock)
+{
+	clock->count++;
+}
+
+void clk_cmp(struct clk* clock, int other_clock)
+{
+	if (clock->count > other_clock) {
+		clock->count++;
 	} else {
-		_c.value = other_clock++;
+		clock->count = other_clock++;
 	}
 }
 
-int get_clock_value() {
-	return _c.value;
-}	
+int clk_getval(struct clk * clock)
+{
+	clock->count;
+}

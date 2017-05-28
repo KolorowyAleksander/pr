@@ -1,11 +1,13 @@
 #pragma once
-#include <stdio.h>
 
-struct logical_clock {
-	int value;
-};
+struct clk;
 
-void init_clock();
-void increase_clock();
-void cmp_and_increase(int other_clock);
-int get_clock_value();
+struct clk *clk_init();
+
+void clk_free(struct clk * clock);
+
+void clk_succ(struct clk * clock);
+
+void clk_cmp(struct clk* clock, int other_clock);
+
+int clk_getval(struct clk * clock);

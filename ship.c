@@ -10,9 +10,12 @@ struct request {
 
 struct request queue[SLAVENUM];
 
-void leaving(int* s_tids, int n) {
-	int c = get_clock_value();
-	increase_clock();
+struct clk * clock;
+
+void leaving(int* s_tids, int n)
+{
+	int c = clk_getval(clock);
+	clk_inc(clock);
 
 	int i;
 	for(i = 0; i < n; i++) {
@@ -22,15 +25,17 @@ void leaving(int* s_tids, int n) {
 	}
 }
 
-void add_to_queue(int tid, int n, int h) {
-	int c = get_clock_value();
+void add_to_queue(int tid, int n, int h)
+{
+	int c = clk_getval(clock);
 	// add to queue
 	pvm_initsend(PvmDataDefault);
 	pvm_pkint(&c, 1, 1);
 	pvm_send(tid, MSG_OK);
 }
 
-void remove_from_queue(int tid, int n) {
+void remove_from_queue(int tid, int n)
+{
 	int i;
 	for(i = 0; i < n; i++) {
 		if(queue[i].tid == tid) {
@@ -39,15 +44,16 @@ void remove_from_queue(int tid, int n) {
 		}
 	}
 }
-			
-void entering(int* s_tids, int n, int h, int H) {
+
+void entering(int* s_tids, int n, int h, int H)
+{
 	int i;
 	for(i = 0; i < n; i++) {
 		queue[i].clock = -1;
 	}
 
-	int c = get_clock_value(); 
-	
+	int c = clk_getval(clock);
+
 	for(i = 0; i < n; i++) {
 		pvm_initsend(PvmDataDefault);
 		pvm_pkint(&c, 1, 1);
@@ -66,8 +72,8 @@ void entering(int* s_tids, int n, int h, int H) {
 		pvm_bufinfo(bufid, NULL, &tag, &s_tid);
 		pvm_upkint(&c, 1, 1);
 
-		cmp_and_increase(c);
-		
+		clk_cmp(clock, c);
+
 		switch(tag) {
 		case MSG_TAKE:
 			add_to_queue(s_tid, n, h);
@@ -82,9 +88,11 @@ void entering(int* s_tids, int n, int h, int H) {
 	}
 }
 
-void wait_for(int duration, int n) {
+void wait_for(int duration, int n)
+{
 	int bufid, time_left = duration;
 	time_t t1, t2;
+
 	struct timeval t = {
 		.tv_sec = time_left,
 		.tv_usec = 0
@@ -98,10 +106,10 @@ void wait_for(int duration, int n) {
 			int s_tid; // sender id
 			int c;     // clock value
 			int h;
-			pvm_bufinfo(bufid, NULL, &tag, &s_tid);	
+			pvm_bufinfo(bufid, NULL, &tag, &s_tid);
 			pvm_upkint(&c, 1, 1);
-			
-			cmp_and_increase(c);
+
+			clk_cmp(clock, c);
 
 			switch(tag) {
 			case MSG_TAKE:
@@ -112,7 +120,7 @@ void wait_for(int duration, int n) {
 				remove_from_queue(s_tid, n);
 				break;
 			}
-			
+
 			time_left -= (t2 - t1);
 			t.tv_sec = time_left;
 		} else {
@@ -121,7 +129,8 @@ void wait_for(int duration, int n) {
 	}
 }
 
-void sailing(int* s_tids, int n, int h, int H) {
+void sailing(int* s_tids, int n, int h, int H)
+{
 	int i;
 	for(i = 0; i < 3; i++) { // this will be infinite loop
 		wait_for(2, n);
@@ -146,7 +155,7 @@ int main(int argc, char** argv) {
 	pvm_upkint(s_tids, n, 1);
 	pvm_upkint(&h, 1, 1);
 	pvm_upkint(&H, 1, 1);
-	
+
 	int i;
 	for(i = 0; i < n; i++) {
 		queue[i].clock = -1;
@@ -154,7 +163,7 @@ int main(int argc, char** argv) {
 		queue[i].tid = s_tids[i];
 	}
 
-	init_clock();
+	clock = init_clock();
 	sailing(s_tids, n, h, H);
 
 	pvm_exit();
