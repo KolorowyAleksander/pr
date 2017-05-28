@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <sys/time.h>
 #include <pvm3.h>
 
 #define SLAVENAME "ship"
-#define SLAVENUM  5 
+#define SLAVENUM  5
 
 #define MSG_INIT 777
 #define MSG_TAKE 888

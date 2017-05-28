@@ -18,7 +18,7 @@ void add_to_queue(int tid, int n, int h)
 	       tid,
 	       clock_getval(clock));
 
-	// add to queue
+	// TODO: add to queue
 	clk_inc(clock);
 	int c = clk_getval(clock);
 	pvm_initsend(PvmDataDefault);
@@ -31,16 +31,18 @@ void remove_from_queue(int tid, int n)
 	printf("Recieved leaving from: %d, clock: %d\n",
 	       tid,
 	       clk_getval(clock));
-	// remove from queue
+	// TODO: remove from queue
 }
 
 void leaving(int* s_tids, int n)
 {
-	int c = clk_getval(clock);
-	clk_inc(clock);
+	printf("Leaving, clock: %d\n", clk_getval(clock));
 
 	int i;
 	for(i = 0; i < n; i++) {
+		int c = clk_getval(clock);
+		clk_inc(clock);
+
 		pvm_initsend(PvmDataDefault);
 		pvm_pkint(&c, 1, 1);
 		pvm_send(s_tids[i], MSG_FREE);
@@ -52,11 +54,8 @@ void entering(int* s_tids, int n, int h, int H)
 	printf("Entering: clock: %d\n", clk_getval(clock));
 	int bufid, tag, s_tid, c, h, permissions;
 
+	// TODO: clear queue
 	int i;
-	for(i = 0; i < n; i++) {
-		queue[i].clock = -1; // set all messages to none
-	}
-
 	for(i = 0; i < n; i++) {
 		clk_inc(clock);
 		int now = clk_getval(clock);
@@ -90,18 +89,18 @@ void entering(int* s_tids, int n, int h, int H)
 	}
 }
 
-void idle(int duration, int n)
+void idle(double duration, int n)
 {
-	int bufid, tag, s_tid, c, h, time_left = duration;
-	struct timeval t = { .tv_sec = time_left, .tv_usec = 0 };
-	time_t t1, t2;
+	int bufid, tag, s_tid, c, h;
+	struct timeval t, t1, t2;
 
 	printf("Waiting: clock: %d\n", clk_getval(clock));
 
-	while(time_left > 0) {
-		t1 = time(NULL);
+	while(duration > 0) {
+		gettimeofday(&t1, NULL);
 
-		if((bufid = pvm_trecv(-1, -1, &t)) > 0) {
+		t.tv_usec = duration;
+		if ((bufid = pvm_trecv(-1, -1, &t)) > 0) {
 			pvm_bufinfo(bufid, NULL, &tag, &s_tid);
 			pvm_upkint(&c, 1, 1);
 
@@ -119,9 +118,8 @@ void idle(int duration, int n)
 			}
 		}
 
-		t2 = time(NULL);
-		time_left -= (t2 - t1);
-		t.tv_sec = time_left;
+		gettimeofday(&t2, NULL);
+		duration -= (t2.tv_usec - t1.tv_usec);
 	}
 }
 
@@ -130,7 +128,7 @@ void sailing(int* s_tids, int n, int h, int H)
 	printf("Sailing: %d\n", my_tid);
 
 	int i;
-	for(i = 0; i < 3; i++) { // this will be infinite loop
+	for(i = 0; i < 3; i++) { // this will be infinite loop sometime
 		idle(2, n);
 		entering(s_tids, n, h, H);
 		idle(2, n);
