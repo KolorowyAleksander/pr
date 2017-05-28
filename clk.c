@@ -9,7 +9,7 @@ struct clk {
 struct clk *clk_init()
 {
 	struct clk * _c = malloc(sizeof * _c);
-	_c.count = 0;
+	_c->count = 0;
 
 	return _c;
 }

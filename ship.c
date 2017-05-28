@@ -140,9 +140,9 @@ void sailing(int* s_tids, int n, int h, int H)
 	}
 }
 
-int main(int argc, char** argv) {
-	int my_tid;
-	int h, H, n;
+int main(int argc, char** argv)
+{
+	int my_tid, h, H, n;
 	int s_tids[SLAVENUM]; // other ships
 
 	my_tid = pvm_mytid();  // initiating this as a pvm process
@@ -163,7 +163,9 @@ int main(int argc, char** argv) {
 		queue[i].tid = s_tids[i];
 	}
 
-	clock = init_clock();
+	clock = clk_init();
+
+	printf("Sailing: %d\n", my_tid);
 	sailing(s_tids, n, h, H);
 
 	pvm_exit();
