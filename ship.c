@@ -8,7 +8,7 @@ struct clk * clock;
 
 void add_to_queue(int tid, int n, int h)
 {
-	printf("Recieved entering from: %d, clock: %d\n",
+	fprintf(stdout, "Recieved entering from: %d, clock: %d\n",
 	       tid,
 	       clk_getval(clock));
 
@@ -21,7 +21,7 @@ void add_to_queue(int tid, int n, int h)
 
 void remove_from_queue(int tid, int n)
 {
-	printf("Recieved leaving from: %d, clock: %d\n",
+	fprintf(stdout, "Recieved leaving from: %d, clock: %d\n",
 	       tid,
 	       clk_getval(clock));
 	// TODO: remove from queue
@@ -29,7 +29,7 @@ void remove_from_queue(int tid, int n)
 
 void leaving(int* s_tids, int n)
 {
-	printf("Leaving, clock: %d\n", clk_getval(clock));
+	fprintf(stdout, "Leaving, clock: %d\n", clk_getval(clock));
 
 	int i;
 	for(i = 0; i < n; i++) {
@@ -43,7 +43,7 @@ void leaving(int* s_tids, int n)
 
 void entering(int* s_tids, int n, int h, int H)
 {
-	printf("Entering: clock: %d\n", clk_getval(clock));
+	fprintf(stdout, "Entering: clock: %d\n", clk_getval(clock));
 	int bufid, tag, s_tid, permissions;
 
 	// TODO: clear queue
@@ -86,7 +86,8 @@ void idle(int n)
 	int bufid, tag, s_tid, h;
 	struct timeval t, t1, t2;
 
-	printf("Waiting for: %f us, clock: %d\n", duration, clk_getval(clock));
+	fprintf(stdout, "Waiting for: %f us, clock: %d\n", duration,
+		clk_getval(clock));
 
 	while(duration > 0) {
 		gettimeofday(&t1, NULL);
@@ -116,7 +117,7 @@ void idle(int n)
 
 void sailing(int* s_tids, int n, int h, int H)
 {
-	printf("Sailing!\n");
+	fprintf(stdout, "Sailing!\n");
 
 	int i;
 	for(i = 0; i < 3; i++) { // this will be infinite loop sometime
