@@ -9,7 +9,7 @@ run:
 $(PVM_HOME)/master:	master.c def.h
 	$(CC) -g master.c -o $(PVM_HOME)/master -L$(PVMLIB) -I$(PVMINC) -lpvm3 -lgpvm3
 
-$(PVM_HOME)/ship:	ship.c def.h clk.o
+$(PVM_HOME)/ship:	ship.c def.h utils.h clk.o
 	$(CC) -g ship.c clk.o -o $(PVM_HOME)/ship -L$(PVMLIB) -I$(PVMINC) -lpvm3 -lgpvm3
 
 $logical_clock.o:	clk.c clk.h

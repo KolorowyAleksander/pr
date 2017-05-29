@@ -15,7 +15,7 @@ void clk_inc(struct clk * clock);
 void clk_pkclk(struct clk * clock);
 
 // unpacks from pvm buffer, and compares recieved value with clock
-void clk_upk_and_cmp(struct clk * clock);
+int clk_upk_and_cmp(struct clk * clock);
 
 // recieve underlying value
 int clk_getval(struct clk * clock);

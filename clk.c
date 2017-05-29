@@ -30,12 +30,14 @@ void clk_pkclk(struct clk * clock)
 	pvm_pkint(&(clock->count), 1, 1);
 }
 
-void clk_upk_and_cmp(struct clk * clock)
+// increases local clock, also returns recieved clock value
+int clk_upk_and_cmp(struct clk * clock)
 {
 	int _c;
 	pvm_upkint(&_c, 1, 1);
 
-	clock->count = clock->count > _c ? clock->count++ : _c++;
+	clock->count = clock->count > _c ? clock->count++ : _c+1;
+	return _c;
 }
 
 int clk_getval(struct clk * clock)
