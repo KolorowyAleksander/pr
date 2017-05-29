@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include <sys/time.h>
+#include <time.h>
 #include <pvm3.h>
 
 #define SLAVENAME "ship"
