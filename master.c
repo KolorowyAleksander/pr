@@ -17,12 +17,10 @@ int main(int argc, char ** argv) {
 
 	my_tid = pvm_mytid(); // just to start this as a pvm process
 
-	pvm_catchout(stdout);
-
 	nproc=pvm_spawn(SLAVENAME, NULL, PvmTaskDefault, "", SLAVENUM, tids);
 
 	fprintf(stdout, "spawned %d tasks\n", nproc);
-	
+
 	int i;
 	for(i = 0; i < nproc; i++) {
 		h[i] = rand() % 100;
@@ -38,6 +36,14 @@ int main(int argc, char ** argv) {
 		pvm_send(tids[i], MSG_INIT);
 	}
 
+
+
+	while(true) {
+		char s[MAX_MSG_SIZE];
+		pvm_recv(-1, MSG_LOG);
+		pvm_upkstr(s);
+		fprintf(stdout, s);
+	}
+
 	pvm_exit();
 }
-

@@ -6,9 +6,22 @@
 
 struct clk * clock;
 
+void log_to_master(const char * fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	char s[MAX_MSG_SIZE];
+
+	vsprintf(s, fmt, args);
+	pvm_initsend(PvmDataDefault);
+	pvm_pkstr(s);
+	pvm_send(pvm_parent(), MSG_LOG);
+}
+
 void add_to_queue(int tid, int n, int h)
 {
-	fprintf(stdout, "Recieved entering from: %d, clock: %d\n",
+	log_to_master("Recieved entering from: %d, clock: %d\n",
 	       tid,
 	       clk_getval(clock));
 
@@ -21,7 +34,7 @@ void add_to_queue(int tid, int n, int h)
 
 void remove_from_queue(int tid, int n)
 {
-	fprintf(stdout, "Recieved leaving from: %d, clock: %d\n",
+	log_to_master("Recieved leaving from: %d, clock: %d\n",
 	       tid,
 	       clk_getval(clock));
 	// TODO: remove from queue
@@ -29,7 +42,7 @@ void remove_from_queue(int tid, int n)
 
 void leaving(int* s_tids, int n)
 {
-	fprintf(stdout, "Leaving, clock: %d\n", clk_getval(clock));
+	log_to_master("Leaving, clock: %d\n", clk_getval(clock));
 
 	int i;
 	for(i = 0; i < n; i++) {
@@ -43,7 +56,7 @@ void leaving(int* s_tids, int n)
 
 void entering(int* s_tids, int n, int h, int H)
 {
-	fprintf(stdout, "Entering: clock: %d\n", clk_getval(clock));
+	log_to_master("Entering: clock: %d\n", clk_getval(clock));
 	int bufid, tag, s_tid, permissions;
 
 	// TODO: clear queue
@@ -86,7 +99,7 @@ void idle(int n)
 	int bufid, tag, s_tid, h;
 	struct timeval t, t1, t2;
 
-	fprintf(stdout, "Waiting for: %f us, clock: %d\n", duration,
+	log_to_master("Waiting for: %f us, clock: %d\n", duration,
 		clk_getval(clock));
 
 	while(duration > 0) {
@@ -117,7 +130,7 @@ void idle(int n)
 
 void sailing(int* s_tids, int n, int h, int H)
 {
-	fprintf(stdout, "Sailing!\n");
+	log_to_master("Sailing!\n");
 
 	int i;
 	for(i = 0; i < 3; i++) { // this will be infinite loop sometime
@@ -145,7 +158,7 @@ int main(int argc, char** argv)
 
 	clk_make(clock);
 	sailing(s_tids, n, h, H);
-
 	clk_free(clock);
+
 	pvm_exit();
 }
