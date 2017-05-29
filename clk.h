@@ -3,7 +3,7 @@
 struct clk;
 
 // initialize clock
-void clk_make(struct clk * clock);
+struct clk * clk_make();
 
 // free memory
 void clk_free(struct clk * clock);

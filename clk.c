@@ -8,10 +8,11 @@ struct clk {
 	int count;
 };
 
-void clk_make(struct clk * clock)
+struct clk * clk_make()
 {
-	clock = malloc(sizeof * clock);
-	clock->count = 0;
+	struct clk * _c = malloc(sizeof * _c);
+	_c->count = 0;
+	return _c;
 }
 
 void clk_free(struct clk * clock)

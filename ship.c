@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 	pvm_upkint(&h, 1, 1);
 	pvm_upkint(&H, 1, 1);
 
-	clk_make(clock);
+	clock = clk_make();
 	sailing(s_tids, n, h, H);
 	clk_free(clock);
 
