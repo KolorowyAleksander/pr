@@ -8,12 +8,16 @@ void log_m(const char * fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
+	const char * _fmt = "[%d]%s\n";
 
 	char s[MAX_MSG_SIZE];
+	char s_w_tid[MAX_MSG_SIZE];
 
 	vsprintf(s, fmt, args);
+	sprintf(s_w_tid, _fmt, pvm_mytid(), s);
+
 	pvm_initsend(PvmDataDefault);
-	pvm_pkstr(s);
+	pvm_pkstr(s_w_tid);
 	pvm_send(pvm_parent(), MSG_LOG);
 }
 

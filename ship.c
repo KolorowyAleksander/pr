@@ -19,8 +19,8 @@ int s_tids[SLAVENUM]; // other ships ids
 
 void add_to_queue(int tid, int clk, int h)
 {
-	log_m("Recieved entering from: %d, clock: %d\n",
-	      tid, clk_getval(lam_clk));
+	const char * fmt = "Recieved entering from: %d, clock: %d";
+	log_m(fmt, tid, clk_getval(lam_clk));
 
 	que_add(queue, n, tid, clk, h);
 	clk_inc(lam_clk);
@@ -31,8 +31,8 @@ void add_to_queue(int tid, int clk, int h)
 
 void remove_from_queue(int tid)
 {
-	log_m("Recieved leaving from: %d, clock: %d\n",
-	       tid, clk_getval(lam_clk));
+	const char * fmt = "Recieved leaving from: %d, clock: %d";
+	log_m(fmt, tid, clk_getval(lam_clk));
 	que_remove(queue, n, tid);
 }
 
@@ -47,7 +47,7 @@ void send_request(int tid)
 
 void leaving()
 {
-	log_m("Leaving, clock: %d\n", clk_getval(lam_clk));
+	log_m("Leaving, clock: %d", clk_getval(lam_clk));
 
 	int i;
 	for(i = 0; i < n; i++) {
@@ -61,11 +61,10 @@ void leaving()
 void entering()
 {
 	int bufid, tag, permissions, c, s_tid, s_c, s_h;
-	log_m("Entering: clock: %d\n", clk_getval(lam_clk));
+	log_m("Entering: clock: %d", clk_getval(lam_clk));
 
 	c = clk_getval(lam_clk);
 
-	// IS IT NEEDED TO CLEAR QUEUE HERE?
 	int i;
 	for(i = 0; i < n; i++) { // sending request to all other processes
 		if (s_tids[i] != my_tid) {
@@ -106,7 +105,7 @@ void idle()
 	struct timeval t;
 	struct timespec t1, t2, difference;
 
-	log_m("Waiting: %f us, clock: %d\n", left, clk_getval(lam_clk));
+	log_m("Waiting: %.1f us, clock: %d", left, clk_getval(lam_clk));
 
 	while(left > 0) {
 		clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -133,13 +132,12 @@ void idle()
 
 		difference = timespec_diff(t1, t2);
 		left -= difference.tv_sec * 1e6 + difference.tv_nsec * 1e-3;
-		log_m("Difference: %d sec %d nsec\n", difference.tv_sec, difference.tv_nsec);
 	}
 }
 
 void sailing()
 {
-	log_m("Sailing!\n");
+	log_m("Sailing!");
 
 	while(true) {
 		idle();     // waiting random amount of time

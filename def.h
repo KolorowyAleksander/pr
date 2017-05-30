@@ -7,7 +7,7 @@
 
 #define SLAVENAME "ship"
 #define SLAVENUM  5
-#define MAX_MSG_SIZE 128
+#define MAX_MSG_SIZE 255
 
 #define MSG_INIT 777
 #define MSG_TAKE 888
