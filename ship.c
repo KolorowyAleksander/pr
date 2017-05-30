@@ -51,10 +51,12 @@ void leaving()
 
 	int i;
 	for(i = 0; i < n; i++) {
-		clk_inc(lam_clk);
-		pvm_initsend(PvmDataDefault);
-		clk_pkclk(lam_clk);
-		pvm_send(s_tids[i], MSG_FREE);
+		if (s_tids[i] != my_tid) {
+			clk_inc(lam_clk);
+			pvm_initsend(PvmDataDefault);
+			clk_pkclk(lam_clk);
+			pvm_send(s_tids[i], MSG_FREE);
+		}
 	}
 }
 
@@ -72,7 +74,7 @@ void entering()
 		}
 	}
 
-	bool can_enter = n = 1 && h <= H? true : false; // if only one
+	bool can_enter = n = 1 && h <= H - h ? true : false; // if only self
 	permissions = 1; // i allow myself to enter
 	while(!can_enter) {
 		bufid = pvm_recv(-1, -1);
