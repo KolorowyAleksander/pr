@@ -38,7 +38,6 @@ void remove_from_queue(int tid)
 
 void send_request(int tid)
 {
-	clk_inc(lam_clk);
 	pvm_initsend(PvmDataDefault);
 	clk_pkclk(lam_clk);
 	pvm_pkint(&h, 1, 1);
@@ -48,11 +47,11 @@ void send_request(int tid)
 void leaving()
 {
 	log_m("Leaving, clock: %d", clk_getval(lam_clk));
+    clk_inc(lam_clk);
 
 	int i;
 	for(i = 0; i < n; i++) {
 		if (s_tids[i] != my_tid) {
-			clk_inc(lam_clk);
 			pvm_initsend(PvmDataDefault);
 			clk_pkclk(lam_clk);
 			pvm_send(s_tids[i], MSG_FREE);
@@ -65,6 +64,7 @@ void entering()
 	int bufid, tag, permissions, c, s_tid, s_c, s_h;
 	log_m("Entering: clock: %d", clk_getval(lam_clk));
 
+	clk_inc(lam_clk);
 	c = clk_getval(lam_clk);
 
 	int i;
